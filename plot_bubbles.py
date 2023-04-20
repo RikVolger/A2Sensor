@@ -48,7 +48,7 @@ for filename, figtitle in zip(filenames, figtitles):
     
     # get fraction of 1 and 0 counts, convert to percentage
     validity = all_bubbles["Valid"].value_counts(normalize=True)
-    validation_rate = validity.mul(100).astype(int).astype(str)[1]+"%"
+    validation_rate = validity.mul(100).astype(float)[1]
 
     # extract specific data for valid and invalid events
     valid_bubbles_size = all_bubbles[["Number", "Size"]].loc[df["Valid"] == 1]
@@ -65,7 +65,7 @@ for filename, figtitle in zip(filenames, figtitles):
     print(f"Results for {figtitle}:")
     print(f"Total events:\t{all_bubbles['Number'].size}")
     print(f"Valid events:\t{valid_bubbles_size['Size'].size}")
-    print(f"Validation:\t{validation_rate}")
+    print(f"Validation:\t%.2f%%" % validation_rate)
     print(f"Mean size:\t{valid_bubbles_size['Size'].mean()}")
     print(f"Standard deviation size:\t{valid_bubbles_size['Size'].std(ddof=0)}")
     print(f"Interquartile range of size:\t{Q1:.0f} - {Q3:.0f}")
