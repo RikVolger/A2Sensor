@@ -1,3 +1,12 @@
+"""Load and process data from the A2 Fiber probe, turn into pretty graphs
+
+Expects input to be .evt files from the M2 Analyzer for bubbly flows.
+Requires adaptations in source code for changing source folders of the .evt files.
+
+Outputs a figure for each data file, and a boxplot of the combined data.
+Output folder is a new folder 'fig' in the source folder.
+"""
+
 import os
 import numpy as np
 import pandas as pd
@@ -33,7 +42,7 @@ all_data = []
 all_data_log = []
 
 for filename, figtitle in zip(filenames, figtitles):
-    df = pd.read_csv(prefix+filename, sep="\t", decimal=",")
+    df = pd.read_csv(prefix + filename, sep="\t", decimal=",")
 
     all_bubbles = df[["Number", "Valid", "Veloc", "Size", "Duration"]]
     
@@ -72,7 +81,13 @@ for filename, figtitle in zip(filenames, figtitles):
     plt.title("Bubble size distribution")
     plt.xlabel("Size ($\mu$m)")
     plt.subplot(1, 2, 2)
-    plt.hist([valid_bubbles_dur["Duration"].mul(1000), invalid_bubbles_dur["Duration"].mul(1000)], bins=20, histtype="barstacked", edgecolor='0.25', linewidth=0.7)
+    plt.hist(
+        [valid_bubbles_dur["Duration"].mul(1000), invalid_bubbles_dur["Duration"].mul(1000)], 
+        bins=20,
+        histtype="barstacked",
+        edgecolor='0.25',
+        linewidth=0.7
+    )
     plt.legend(["Valid", "Invalid"])
     plt.title("Chord duration distribution")
     plt.xlabel("Duration (ms)")
@@ -80,7 +95,10 @@ for filename, figtitle in zip(filenames, figtitles):
 
     plt.tight_layout()
 
-    plt.savefig(f"{prefix}\\fig\{i_fig}_{figtitle.replace(' + ', '_').replace(' (', '_(')}.png", dpi=300)
+    # make valid filename out of figure title
+    figsavetitle = figtitle.replace(' + ', '_').replace(' (', '_(').replace(' ', '-')
+
+    plt.savefig(f"{prefix}\\fig\{i_fig}_{figsavetitle}.png", dpi=300)
     
     i_fig += 1
 
