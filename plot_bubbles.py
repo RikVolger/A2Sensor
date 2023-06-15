@@ -16,25 +16,37 @@ inch = 2.54
 
 # prefix and filename using Raw strings to get around \r being recognized as a special character
 # using capital R for raw string because of failing syntax highlighting with small r
-prefix = R"C:\Users\rikvolger\OneDrive - Delft University of Technology\Experimental\A2 Fiber Probe\23-01-12 Tryout"
+prefix = R"U:\NNTomo\Salts transition concentrations\NaCl\Fiber Probe"
 filenames = [
-    R"\2023-01-12T145535.evt",
-    R"\2023-01-12T151513.evt",
-    R"\2023-01-12T154712.evt",
-    R"\2023-01-12T160208.evt",
+    R"\2023-06-14T104006.evt",
+    R"\2023-06-14T120742.evt",
+    R"\2023-06-14T121120.evt",
+    R"\2023-06-14T134205.evt",
+    R"\2023-06-14T141757.evt",
+    R"\2023-06-14T143937.evt",
+    R"\2023-06-14T145545.evt",
+    R"\2023-06-14T151355.evt",
+    R"\2023-06-14T153455.evt",
+    R"\2023-06-14T161538.evt",
 ]
 
 fig_path = os.path.join(prefix, "fig")
 os.makedirs(fig_path, exist_ok=True)
 
 figtitles = [
-    "Water",
-    "Water (accelerated)",
-    "Water + EtOH 1% (accelerated)",
-    "Water + EtOH 3% (accelerated)",
+    "Water 100 lmin",
+    "0.001 M NaCl 100 lmin",
+    "0.001 M NaCl 100 lmin",
+    "0.005 M NaCl 100 lmin",
+    "0.010 M NaCl 100 lmin",
+    "0.020 M NaCl  90 lmin",
+    "0.050 M NaCl  80 lmin",
+    "0.100 M NaCl  70 lmin",
+    "0.200 M NaCl  50 lmin",
+    "0.500 M NaCl  40 lmin",
 ]
 
-boxplot_labels = ["W", "W(a)", "WE1(a)", "WE3(a)"]
+boxplot_labels = ["W100", ".001_100", ".001_100", ".005_100", ".01_100", ".02_90", ".05_80", ".1_70", ".2_50", ".5_40"]
 
 i_fig = 0
 
@@ -45,17 +57,17 @@ for filename, figtitle in zip(filenames, figtitles):
     df = pd.read_csv(prefix + filename, sep="\t", decimal=",")
 
     all_bubbles = df[["Number", "Valid", "Veloc", "Size", "Duration"]]
-    
+
     # get fraction of 1 and 0 counts, convert to percentage
     validity = all_bubbles["Valid"].value_counts(normalize=True)
     validation_rate = validity.mul(100).astype(int).astype(str)[1]+"%"
 
     # extract specific data for valid and invalid events
-    valid_bubbles_size = all_bubbles[["Number", "Size"]].loc[df["Valid"] == 1]
+    valid_bubbles_size = all_bubbles[["Number", "Size"]].loc[df["Valid"] == 1 and df["Size"] > 40]
     valid_bubbles_dur = all_bubbles[["Number", "Duration"]].loc[df["Valid"] == 1]
     invalid_bubbles_dur = all_bubbles[["Number", "Duration"]].loc[df["Valid"] == 0]
     Q1, Q3 = valid_bubbles_size['Size'].quantile([.25, .75])
-    
+
     # store data for use in boxplot
     all_data.append(valid_bubbles_size["Size"].to_numpy())
     all_data_log.append(np.log10(valid_bubbles_size["Size"]))
@@ -99,7 +111,7 @@ for filename, figtitle in zip(filenames, figtitles):
     figsavetitle = figtitle.replace(' + ', '_').replace(' (', '_(').replace(' ', '-')
 
     plt.savefig(f"{prefix}\\fig\{i_fig}_{figsavetitle}.png", dpi=300)
-    
+
     i_fig += 1
 
 # boxplots of bubble size distributions in all conditions
@@ -123,4 +135,4 @@ plt.tight_layout()
 
 plt.savefig(f"{prefix}\\fig\{i_fig}_boxplot_all_data.png", dpi=300)
 
-# plt.show()
+plt.show()
