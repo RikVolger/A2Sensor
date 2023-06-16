@@ -15,7 +15,7 @@ from matplotlib import pyplot as plt
 inch = 2.54
 
 # prefix and filename using Raw strings to get around \r being recognized as a special character
-# using capital R for raw string because of failing syntax highlighting with small r
+# using capital R for raw string because of failing syntax highlighting with small r in VSCode
 prefix = R"U:\NNTomo\Salts transition concentrations\NaCl\Fiber Probe"
 filenames = [
     R"\2023-06-14T104006.evt",
@@ -27,8 +27,12 @@ filenames = [
     R"\2023-06-14T145545.evt",
     R"\2023-06-14T151355.evt",
     R"\2023-06-14T153455.evt",
-    R"\2023-06-14T161538.evt",
+    # R"\2023-06-14T161538.evt",
 ]
+
+if not os.path.isdir(prefix):
+    print("Can't find source folder. Exiting.")
+    quit()
 
 fig_path = os.path.join(prefix, "fig")
 os.makedirs(fig_path, exist_ok=True)
@@ -43,15 +47,31 @@ figtitles = [
     "0.050 M NaCl  80 lmin",
     "0.100 M NaCl  70 lmin",
     "0.200 M NaCl  50 lmin",
-    "0.500 M NaCl  40 lmin",
+    # "0.500 M NaCl  40 lmin",
 ]
 
-boxplot_labels = ["W100", ".001_100", ".001_100", ".005_100", ".01_100", ".02_90", ".05_80", ".1_70", ".2_50", ".5_40"]
+boxplot_labels = [
+    "W100",
+    ".001_100",
+    ".001_100 (2)",
+    ".005_100",
+    ".01_100",
+    ".02_90",
+    ".05_80",
+    ".1_70",
+    ".2_50",
+    # ".5_40",
+    ]
+
+concentrations = [
+    0.001, 0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2
+]
 
 i_fig = 0
 
 all_data = []
 all_data_log = []
+d_32_all = []
 
 for filename, figtitle in zip(filenames, figtitles):
     df = pd.read_csv(prefix + filename, sep="\t", decimal=",")
@@ -59,14 +79,21 @@ for filename, figtitle in zip(filenames, figtitles):
     all_bubbles = df[["Number", "Valid", "Veloc", "Size", "Duration"]]
 
     # get fraction of 1 and 0 counts, convert to percentage
+    all_bubbles.loc[all_bubbles.Size < 20, ["Valid"]] = 0
     validity = all_bubbles["Valid"].value_counts(normalize=True)
     validation_rate = validity.mul(100).astype(int).astype(str)[1]+"%"
 
     # extract specific data for valid and invalid events
-    valid_bubbles_size = all_bubbles[["Number", "Size"]].loc[df["Valid"] == 1 and df["Size"] > 40]
-    valid_bubbles_dur = all_bubbles[["Number", "Duration"]].loc[df["Valid"] == 1]
-    invalid_bubbles_dur = all_bubbles[["Number", "Duration"]].loc[df["Valid"] == 0]
+    valid_bubbles_size = all_bubbles[["Number", "Size"]].loc[all_bubbles["Valid"] == 1]
+    # valid_bubbles_size = valid_bubbles_size.loc[valid_bubbles_size["Size"] > 40]
+    valid_bubbles_dur = all_bubbles[["Number", "Duration"]].loc[all_bubbles["Valid"] == 1]
+    invalid_bubbles_dur = all_bubbles[["Number", "Duration"]].loc[all_bubbles["Valid"] == 0]
     Q1, Q3 = valid_bubbles_size['Size'].quantile([.25, .75])
+
+    valid_bubbles_size["d3"] = valid_bubbles_size["Size"]**3
+    valid_bubbles_size["d2"] = valid_bubbles_size["Size"]**2
+    d_32 = valid_bubbles_size["d3"].sum() / valid_bubbles_size["d2"].sum()
+    d_32_all.append(d_32)
 
     # store data for use in boxplot
     all_data.append(valid_bubbles_size["Size"].to_numpy())
@@ -78,12 +105,13 @@ for filename, figtitle in zip(filenames, figtitles):
     print(f"Total events:\t{all_bubbles['Number'].size}")
     print(f"Valid events:\t{valid_bubbles_size['Size'].size}")
     print(f"Validation:\t{validation_rate}")
-    print(f"Mean size:\t{valid_bubbles_size['Size'].mean()}")
-    print(f"Standard deviation size:\t{valid_bubbles_size['Size'].std(ddof=0)}")
+    print(f"Sauter size:\t{d_32:.0f}")
+    print(f"Mean size:\t{valid_bubbles_size['Size'].mean():.0f}")
+    print(f"Standard deviation size:\t{valid_bubbles_size['Size'].std(ddof=0):.0f}")
     print(f"Interquartile range of size:\t{Q1:.0f} - {Q3:.0f}")
-    print(f"Mean chord duration (all):\t{all_bubbles['Duration'].mul(1000).mean()}")
-    print(f"Mean chord duration (valid):\t{valid_bubbles_dur['Duration'].mul(1000).mean()}")
-    print(f"Mean chord duration (invalid):\t{invalid_bubbles_dur['Duration'].mul(1000).mean()}")
+    print(f"Mean chord duration (all):\t{all_bubbles['Duration'].mul(1000).mean():.2f}")
+    print(f"Mean chord duration (valid):\t{valid_bubbles_dur['Duration'].mul(1000).mean():.2f}")
+    print(f"Mean chord duration (invalid):\t{invalid_bubbles_dur['Duration'].mul(1000).mean():.2f}")
     print("-"*50 + "\n")
 
     # create plots of bubble size and chord length distributions
@@ -135,4 +163,20 @@ plt.tight_layout()
 
 plt.savefig(f"{prefix}\\fig\{i_fig}_boxplot_all_data.png", dpi=300)
 
-plt.show()
+i_fig += 1
+
+plt.figure(figsize=(9/inch, 7/inch))
+plt.semilogx(concentrations, d_32_all[1:], "x")
+xlim = plt.xlim()
+plt.semilogx([min(concentrations)/2, max(concentrations)*2], [d_32_all[0], d_32_all[0]])
+plt.xlim(xlim)
+plt.ylim(bottom=0)
+plt.title("Sauter mean diameter")
+plt.xlabel("Salt concentration (M)")
+plt.ylabel("$d_{32}$ ($\mu$m)")
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+plt.savefig(f"{prefix}\\fig\{i_fig}_sauter_diameters.png", dpi=300)
+
+# plt.show()
