@@ -122,7 +122,7 @@ for filename, figtitle in zip(filenames, figtitles):
     plt.xlabel("Size ($\mu$m)")
     plt.subplot(1, 2, 2)
     plt.hist(
-        [valid_bubbles_dur["Duration"].mul(1000), invalid_bubbles_dur["Duration"].mul(1000)], 
+        [valid_bubbles_dur["Duration"].mul(1000), invalid_bubbles_dur["Duration"].mul(1000)],
         bins=20,
         histtype="barstacked",
         edgecolor='0.25',
@@ -166,11 +166,12 @@ plt.savefig(f"{prefix}\\fig\{i_fig}_boxplot_all_data.png", dpi=300)
 i_fig += 1
 
 plt.figure(figsize=(9/inch, 7/inch))
-plt.semilogx(concentrations, d_32_all[1:], "x")
+plt.semilogx(concentrations, d_32_all[1:], "x", label="NaCl")
 xlim = plt.xlim()
-plt.semilogx([min(concentrations)/2, max(concentrations)*2], [d_32_all[0], d_32_all[0]])
+plt.semilogx([min(concentrations)/2, max(concentrations)*2], [d_32_all[0], d_32_all[0]], label="Water")
 plt.xlim(xlim)
 plt.ylim(bottom=0)
+plt.legend()
 plt.title("Sauter mean diameter")
 plt.xlabel("Salt concentration (M)")
 plt.ylabel("$d_{32}$ ($\mu$m)")
