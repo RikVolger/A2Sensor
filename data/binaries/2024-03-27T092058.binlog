@@ -1,0 +1,8 @@
+<!DOCTYPE A2SOML>
+<acquisition acquisitionStartTime="09:24:18" flowType="bubbles" acquisitionNumberOfSamples="1270832000" acquisitionFrequency="10416666.666666666" acquisitionComment="0 g" A2SOMLVersion="1.0" blockMode="block" gaseousRefractiveIndex="1" acquisitionMode="multiTrigSingleOutput" acquisitionStopTime="09:34:12" liquidRefractiveIndex="1.3300000000000001" acquisitionName="2024-03-27T09:24:18">
+ <streaming streamingGasLevel="0.40000000000000002" streamingDuration="199.99999988799999" streamingFrequency="4807692.307692308"/>
+ <conditionalRecording conditionalRecordingSide="above" conditionalRecordingDuration="30000" conditionalRecordingFrequency="6.7356282741468068" conditionalRecordingChannel="A" conditionalRecordingThreshold="0.10000000000000001" conditionalRecordingBlockSize="317708" conditionalRecordingPreTrig="500" conditionalRecordingNumberOfBlocks="4000"/>
+ <software softwareVersionMinor="34" softwareName="M2 Analyzer for Bubbles" softwareVersionMajor="2"/>
+ <daq daqType="Pico 5243D" daqSerial="JO299/0031"/>
+ <channel channelName="A" acquisitionLog="U:/Bubble Column/Data/A2 Fiber Probe/240327 - NH4Cl/2024-03-27T092058.binlog" channelVoltageIndex="7" channelCoef2="6.1037018951994385e-05" channelOutputFile="2024-03-27T092058.bin" channelVoltageRange="± 2 V" channelStreamingOutputFile="2024-03-27T092058_stream.bin" channelCoef1="0"/>
+</acquisition>
