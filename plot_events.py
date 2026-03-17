@@ -23,8 +23,8 @@ def get_acquisition_parameters(file):
     return f, coef1, coef2
 
 
-def build_title(evt):
-    title = ''
+def build_title(i, evt):
+    title = f'{i:03d}; '
     if evt['Valid']:
         title += 'Valid bubble'
     else:
@@ -41,8 +41,9 @@ def build_title(evt):
         title += 'Invalid exit'
     return title
 
+
 if __name__ == "__main__":
-    file_root = R"C:\Users\rikvolger\Documents\Codebase\A2Sensor\data\binaries\2024-03-27T092058" 
+    file_root = R"C:\Users\rikvolger\Codebase\A2Sensor\data\binaries\2024-03-27T092058" 
     evt_file = file_root + ".evt"
     events = pd.read_csv(evt_file, sep="\t", header=0, decimal=",")
 
@@ -56,22 +57,23 @@ if __name__ == "__main__":
     # for i, evt in events.iterrows():
     for i, evt in events.reindex().sort_index(ascending=False).iterrows():
         # read corresponding part of voltage data
-        evt_data = bin_data.get_range(int(evt['Start']), int(evt['End']))
-        evt_times = [(i + int(evt['Start'])) / acq_frequency / 60 for i in range(len(evt_data))]
-        entry_time = evt['Entry'] / acq_frequency / 60
-        exit_time = evt['Exit'] / acq_frequency / 60
-        title = build_title(evt)
-        # titlestring: (in)valid bubble; (in)valid start; (in)valid end
-        # create plot of data
-        fig, ax = plt.subplots(1, 1)
-        ax.plot(evt_times, evt_data)
-        ax.plot([entry_time, entry_time], [0, max(evt_data)])
-        ax.plot([exit_time, exit_time], [0, max(evt_data)])
-        ax.set_xlabel("Time (minutes)")
-        ax.set_ylabel("Signal (V)")
-        ax.set_title(title)
-        # show plot
-        plt.show()
+        if evt['Valid']:
+            evt_data = bin_data.get_range(int(evt['Start']), int(evt['End']))
+            evt_times = [(i + int(evt['Start'])) / acq_frequency / 60 for i in range(len(evt_data))]
+            entry_time = evt['Entry'] / acq_frequency / 60
+            exit_time = evt['Exit'] / acq_frequency / 60
+            title = build_title(i, evt)
+            # titlestring: (in)valid bubble; (in)valid start; (in)valid end
+            # create plot of data
+            fig, ax = plt.subplots(1, 1)
+            ax.plot(evt_times, evt_data)
+            ax.plot([entry_time, entry_time], [0, max(evt_data)])
+            ax.plot([exit_time, exit_time], [0, max(evt_data)])
+            ax.set_xlabel("Time (minutes)")
+            ax.set_ylabel("Signal (V)")
+            ax.set_title(title)
+            # show plot
+            plt.show()
 
     for i, evt in events.iterrows():
         if evt['OKOut']:
